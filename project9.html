@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Registration</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4a90e2;
+            --bg-color: #f4f7f6;
+        }
+
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg-color); display: flex; justify-content: center; padding: 20px; }
+        .card { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
+        h2 { text-align: center; color: #333; }
+
+        .input-group { margin-bottom: 1.2rem; position: relative; }
+        label { display: block; margin-bottom: 5px; font-size: 0.9rem; color: #666; }
+        input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        
+        .pass-wrapper { position: relative; }
+        .toggle-password { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #888; }
+
+        .captcha-container { background: #eee; padding: 10px; border-radius: 4px; margin-bottom: 1rem; display: flex; align-items: center; justify-content: space-between; font-weight: bold; }
+        
+        button { width: 100%; padding: 12px; background: var(--primary-color); color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 1rem; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+        
+        .error { color: red; font-size: 0.8rem; margin-top: 5px; display: none; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>Create Account</h2>
+    <form id="regForm">
+        <div class="input-group">
+            <label>Email</label>
+            <input type="email" id="email" required placeholder="email@example.com">
+        </div>
+
+        <div class="input-group">
+            <label>Phone</label>
+            <input type="tel" id="phone" required placeholder="1234567890">
+        </div>
+
+        <div class="input-group">
+            <label>Password</label>
+            <div class="pass-wrapper">
+                <input type="password" id="password" required>
+                <i class="fas fa-eye toggle-password" onclick="togglePass('password', this)"></i>
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label>Confirm Password</label>
+            <div class="pass-wrapper">
+                <input type="password" id="confirmPassword" required>
+                <i class="fas fa-eye toggle-password" onclick="togglePass('confirmPassword', this)"></i>
+            </div>
+            <span id="matchError" class="error">Passwords do not match</span>
+        </div>
+
+        <div class="captcha-container">
+            <span id="captchaText"></span>
+            <input type="text" id="captchaInput" placeholder="Enter result" style="width: 100px;">
+        </div>
+
+        <button type="submit" id="submitBtn" disabled>Register</button>
+    </form>
+</div>
+
+<script>
+    const form = document.getElementById('regForm');
+    const inputs = form.querySelectorAll('input');
+    const submitBtn = document.getElementById('submitBtn');
+    const captchaText = document.getElementById('captchaText');
+    const matchError = document.getElementById('matchError');
+
+    let captchaResult;
+
+    // Generate simple math captcha
+    function generateCaptcha() {
+        const num1 = Math.floor(Math.random() * 10);
+        const num2 = Math.floor(Math.random() * 10);
+        captchaResult = num1 + num2;
+        captchaText.innerText = `Solve: ${num1} + ${num2} =`;
+    }
+
+    // Toggle Password Visibility
+    function togglePass(id, icon) {
+        const field = document.getElementById(id);
+        if (field.type === "password") {
+            field.type = "text";
+            icon.classList.replace('fa-eye', 'fa-eye-slash');
+        } else {
+            field.type = "password";
+            icon.classList.replace('fa-eye-slash', 'fa-eye');
+        }
+    }
+
+    // Validation Logic
+    function validate() {
+        let allFilled = true;
+        inputs.forEach(input => {
+            if (!input.value.trim()) allFilled = false;
+        });
+
+        const pass = document.getElementById('password').value;
+        const confirm = document.getElementById('confirmPassword').value;
+        const captchaInput = document.getElementById('captchaInput').value;
+
+        const passwordsMatch = pass === confirm && pass !== "";
+        const captchaCorrect = parseInt(captchaInput) === captchaResult;
+
+        // Visual feedback for password match
+        matchError.style.display = (pass && confirm && !passwordsMatch) ? 'block' : 'none';
+
+        // Enable button only if all conditions met
+        submitBtn.disabled = !(allFilled && passwordsMatch && captchaCorrect);
+    }
+
+    // Event Listeners
+    inputs.forEach(input => input.addEventListener('input', validate));
+    
+    form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        alert('Form submitted successfully!');
+    });
+
+    // Initialize
+    generateCaptcha();
+</script>
+
+</body>
+</html>
